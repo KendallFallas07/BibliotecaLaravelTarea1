@@ -2,50 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Publisher;
+use Illuminate\Http\Request;
+
 class PublisherController extends Controller
 {
-    private function publishers()
-    {
-        return [
-            [
-                'id' => 1,
-                'name' => 'John Wiley & Sons',
-                'country' => 'United States',
-                'founded' => 1807,
-                'genere' => 'Academic',
-                'books' => [
-                    ['book_id' => 1, 'title' => 'Operating System Concepts'],
-                    ['book_id' => 2, 'title' => 'Database System Concepts'],
-                ]
-            ],
-            [
-                'id' => 2,
-                'name' => 'Pearson Education',
-                'country' => 'United Kingdom',
-                'founded' => 1844,
-                'genere' => 'Education',
-                'books' => [
-                    ['book_id' => 3, 'title' => 'Computer Networks'],
-                    ['book_id' => 4, 'title' => 'Modern Operating Systems'],
-                ]
-            ]
-        ];
-    }
-
     public function index()
     {
-        $publishers = $this->publishers();
+        $publishers = Publisher::all();
         return view('publishers.index', compact('publishers'));
     }
 
-    public function show($id)
+    public function show(Publisher $publisher)
     {
-        $publisher = collect($this->publishers())->firstWhere('id', (int) $id);
-
-        if (!$publisher) {
-            abort(404);
-        }
-
+        $publisher->load('books');
         return view('publishers.show', compact('publisher'));
+    }
+
+    public function create()
+    {
+        return view('publishers.create');
+    }
+
+    public function store(Request $request)
+    {
+        Publisher::create($request->all());
+        return redirect()->route('publishers.index');
+    }
+
+    public function edit(Publisher $publisher)
+    {
+        return view('publishers.edit', compact('publisher'));
+    }
+
+    public function update(Request $request, Publisher $publisher)
+    {
+        $publisher->update($request->all());
+        return redirect()->route('publishers.show', $publisher);
     }
 }
